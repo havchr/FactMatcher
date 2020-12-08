@@ -9,8 +9,40 @@ using UnityEngine;
 
 public class FactMatcherCodeGenerator  
 {
-    
-    
+
+	//Todo write test cases
+
+	public static int RuleIDReflection(RuleDBEntry rule,string namespaceName)
+	{
+		try
+		{
+			var ruleFiredEventID = (int) Type.GetType($"{namespaceName}.RuleIDs")
+				                             .GetField(GenRuleName(rule))
+				                             .GetRawConstantValue();
+			return ruleFiredEventID;
+		}
+		catch (Exception e)
+		{
+			return -1;
+		}
+	}
+	
+	public static int FactIDReflection(RuleDBAtomEntry atom,string namespaceName)
+	{
+		var genNames = CreateFactVariableNameFromFact(atom.factName);
+		try
+		{
+			var factID = (int) Type.GetType($"{namespaceName}.{genNames.Item1}")
+				                   .GetField(genNames.Item2)
+						           .GetRawConstantValue();
+			return factID;
+		}
+		catch (Exception e)
+		{
+			return -1;
+		}
+	}
+	
     public static void GenerateFactIDS()
     {
 	    
@@ -69,12 +101,17 @@ public class FactMatcherCodeGenerator
 		return ruleName;
 	}
 
-	public static int GetRuleNameIDFromReflection(RuleDBEntry entry)
+	public static int CountNumberOfFacts(RulesDB ruleDB)
 	{
-		return  (int) Type.GetType($"FactMatcherGenData.RuleIDs").GetField(GenRuleName(entry)).GetRawConstantValue();
+		var result = ExtractAllKnownFacts(ruleDB);
+		int count = 0;
+		foreach (var res in result)
+		{
+			count += res.Value.Count;
+		}
+		return count;
 	}
-
-	private static Dictionary<string, List<string>> ExtractAllKnownFacts(RulesDB[] rulesContainer)
+	private static Dictionary<string, List<string>> ExtractAllKnownFacts(params RulesDB[] rulesContainer)
 	{
 		Dictionary<string, List<string>> allKnownFacts = new Dictionary<string, List<string>>();
 		//Todo handle clashing keys , for instance  A.FactDB with global and B.FactDB also with global
@@ -94,35 +131,18 @@ public class FactMatcherCodeGenerator
 					//Parsing out atom.factName which is expected to be in form namespace.fact , for instance player.health is namespace player and fact health.
 					if (atom.factName!=null && atom.factName.Length > 1)
 					{
-						
-							
-						var key = atom.factName;
-						var splitted = atom.factName.Split('.');
-						if (splitted.Length <= 2)
+						var genNames = CreateFactVariableNameFromFact(atom.factName);
+						var key = genNames.Item1;
+						var factName  = genNames.Item2;
+						if (!allKnownFacts.ContainsKey(key))
 						{
-							key = splitted[Mathf.Max(splitted.Length - 2, 0)];
-
-							if (key.Equals(atom.factName))
-							{
-								key = "Global";
-							}
-							
-							if (!allKnownFacts.ContainsKey(key))
-							{
-								allKnownFacts[ key ] = new List<string>();
-							}
-
-							var factName = splitted[splitted.Length - 1];
-							if (!allKnownFacts[key].Contains(factName))
-							{
-								allKnownFacts[ key ].Add(factName);
-							}
+							allKnownFacts[ key ] = new List<string>();
 						}
-						else
+
+						if (!allKnownFacts[key].Contains(factName))
 						{
-							Debug.LogError("Format of a fact should be \"namespace.fact\" or just \"fact\"");
+							allKnownFacts[ key ].Add(factName);
 						}
-						
 							
 					}
 				}
@@ -134,32 +154,23 @@ public class FactMatcherCodeGenerator
 						
 						if (factWrite.factName !=null && factWrite.factName.Length > 1)
 						{
+							var genNames = CreateFactVariableNameFromFact(factWrite.factName);
 
-							var key = factWrite.factName;
-							var splitted = factWrite.factName.Split('.');
-							if (splitted.Length <= 2)
+							var key = genNames.Item1;
+							var factName  = genNames.Item2;
+							if (key.Equals(factWrite.factName))
 							{
-								key = splitted[Mathf.Max(splitted.Length - 2, 0)];
-
-								if (key.Equals(factWrite.factName))
-								{
-									key = "Global";
-								}
-								
-								if (!allKnownFacts.ContainsKey(key))
-								{
-									allKnownFacts[ key ] = new List<string>();
-								}
-
-								var factName = splitted[splitted.Length - 1];
-								if (!allKnownFacts[key].Contains(factName))
-								{
-									allKnownFacts[ key ].Add(factName);
-								}
+								key = "Global";
 							}
-							else
+							
+							if (!allKnownFacts.ContainsKey(key))
 							{
-								Debug.LogError("Format of a fact should be \"namespace.fact\" or just \"fact\"");
+								allKnownFacts[ key ] = new List<string>();
+							}
+
+							if (!allKnownFacts[key].Contains(factName))
+							{
+								allKnownFacts[ key ].Add(factName);
 							}
 							
 						}
@@ -169,6 +180,29 @@ public class FactMatcherCodeGenerator
 		}
 
 		return allKnownFacts;
+	}
+
+	public static (string,string) CreateFactVariableNameFromFact(string factName)
+	{
+		
+		var className = factName;
+		var variableName = factName;
+		var splitted = factName.Split('.');
+		if (splitted.Length <= 2)
+		{
+			className = splitted[Mathf.Max(splitted.Length - 2, 0)];
+			variableName = splitted[Mathf.Max(splitted.Length - 1, 0)];
+
+			if (className.Equals(factName))
+			{
+				className = "Global";
+			}
+		}
+		else
+		{
+			Debug.LogError("Format of a fact should be \"namespace.fact\" or just \"fact\"");
+		}
+		return (className + "Facts", variableName);
 	}
 
 	/// <summary>
@@ -214,7 +248,7 @@ public class FactMatcherCodeGenerator
 	            {
 		            
 	            
-				stringBuilder.AppendLine((isUsingNamespace ? tabs : "") + "public static class " + factContainer.Key + "Facts");
+				stringBuilder.AppendLine((isUsingNamespace ? tabs : "") + "public static class " + factContainer.Key);
 				stringBuilder.AppendLine((isUsingNamespace ? tabs : "") + "{");
 				foreach (string name in factContainer.Value)
 				{

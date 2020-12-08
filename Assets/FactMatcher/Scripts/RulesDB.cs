@@ -192,8 +192,12 @@ ScriptableObject
 
         var generatedName = StripNameIntoCamelCase(name);
         var fileName = $"FactMatcher/Generated/{generatedName}.cs";
-        var nameSpace = $"FactMatcher_{generatedName}_Gen";
-        FactMatcherCodeGenerator.GenerateFactIDS(fileName, nameSpace, this);
+        FactMatcherCodeGenerator.GenerateFactIDS(fileName, GetNameSpaceName(), this);
+    }
+
+    public string GetNameSpaceName()
+    {
+        return $"FactMatcher_{StripNameIntoCamelCase(name)}_Gen";
     }
 
         
@@ -280,7 +284,7 @@ ScriptableObject
         {
             foreach (var rule in db.rules)
             {
-                var id = FactMatcherCodeGenerator.GetRuleNameIDFromReflection(rule);
+                var id = FactMatcherCodeGenerator.RuleIDReflection(rule,db.GetNameSpaceName());
                 dic[id] = rule;
 
             }

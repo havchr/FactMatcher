@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using Unity.Collections;
 using UnityEngine;
@@ -84,6 +85,39 @@ namespace FactMatcher
     {
         
         
+        
+    public static void CreateNativeRules(RulesDB db, out NativeArray<FactMatcher.FMRule> rules, out NativeArray<FactMatcher.RuleAtom> ruleAtoms)
+    {
+        rules = new NativeArray<FactMatcher.FMRule>(db.rules.Count, Allocator.Persistent);
+
+        int numOfAtoms = 0;
+        foreach (var ruleDBEntry in db.rules)
+        {
+            foreach (var atom in ruleDBEntry.atoms)
+            {
+                numOfAtoms++;
+            }
+        }
+
+        ruleAtoms = new NativeArray<FactMatcher.RuleAtom>(numOfAtoms, Allocator.Persistent);
+        int atomIndex = 0;
+        
+            
+        Debug.Log($"Creating native version of this many rules {db.rules.Count}");
+        for (int i = 0; i < db.rules.Count; i++)
+        {
+
+            Debug.Log($"Creating native version of rule {db.rules[i].ruleName} with {db.rules[i].atoms} atoms");
+            var ruleFiredEventID = FactMatcherCodeGenerator.RuleIDReflection(db.rules[i],db.GetNameSpaceName());
+            rules[i] = new FactMatcher.FMRule(ruleFiredEventID, atomIndex, db.rules[i].atoms.Count);
+            foreach (var atom in db.rules[i].atoms)
+            {
+                int factID = FactMatcherCodeGenerator.FactIDReflection(atom, db.GetNameSpaceName());
+                ruleAtoms[atomIndex] = new FactMatcher.RuleAtom(factID, i, atom.CreateCompare());
+                atomIndex++;
+            }
+        }
+    }
         
    public static void CreateMockRules(int worldFacts, int numORules,
        out List<FMRule> rules,out List<RuleAtom> atoms,
