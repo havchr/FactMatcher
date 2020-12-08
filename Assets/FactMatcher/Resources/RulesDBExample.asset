@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 49b739ba88421614895d8dd74ce2ccc4, type: 3}
+  m_Name: RulesDBExample
+  m_EditorClassIdentifier: 
+  generateFrom:
+  - {fileID: 4900000, guid: 35477e9a2f11ada469b6ac94b8e30d71, type: 3}
+  rules:
+  - ruleName: RuleName
+    payload: rule matches if age is bigger than 10 and name is Johnny Lemon
+    factWrites: []
+    atoms:
+    - factName: player.age
+      matchString: 
+      matchValue: 10
+      compareMethod: 3
+      compareType: 1
+    - factName: player.name
+      matchString: Johnny Lemon
+      matchValue: 0
+      compareMethod: 0
+      compareType: 0
+  - ruleName: RuleName.Derived
+    payload: rule matches if base rule .RuleName matches and height is bigger than
+      180
+    factWrites:
+    - factName: user.loginAttempt
+      writeString: 
+      writeValue: 1
+      writeMode: 2
+    - factName: user.name
+      writeString: bongotromme
+      writeValue: 0
+      writeMode: 0
+    atoms:
+    - factName: player.age
+      matchString: 
+      matchValue: 10
+      compareMethod: 3
+      compareType: 1
+    - factName: player.name
+      matchString: Johnny Lemon
+      matchValue: 0
+      compareMethod: 0
+      compareType: 0
+    - factName: player.height
+      matchString: 
+      matchValue: 180
+      compareMethod: 3
+      compareType: 1
+  generateSwitch: 0
