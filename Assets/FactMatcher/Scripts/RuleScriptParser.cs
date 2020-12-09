@@ -14,7 +14,7 @@ namespace FactMatcher
         {
             ParsingRule,ParsingResponse,ParsingFactWrite,LookingForRule
         }
-        public void GenerateFromText(string text,List<RuleDBEntry> rules)
+        public void GenerateFromText(string text,List<RuleDBEntry> rules,ref int factID,ref Dictionary<string,int> addedFactIDNames)
         {
 
             RuleScriptParserEnum state = RuleScriptParserEnum.LookingForRule;
@@ -144,6 +144,8 @@ namespace FactMatcher
                             }
                             else
                             {
+                                //Assigns an unique (to the RuleDB) ID to each fact
+                                SetFactID(currentRule, ref addedFactIDNames,ref factID);
                                 rules.Add(currentRule);
                             }
                         
@@ -168,7 +170,43 @@ namespace FactMatcher
                 }
             }
         }
-        
+
+        private static void SetFactID(RuleDBEntry currentRule, ref Dictionary<string,int> addedFactIDNames, ref int factID)
+        {
+            
+            if(currentRule.atoms!=null)
+            foreach (var atomEntry in currentRule.atoms)
+            {
+                if (!addedFactIDNames.ContainsKey(atomEntry.factName))
+                {
+                    atomEntry.factID = factID;
+                    addedFactIDNames[atomEntry.factName] = factID;
+                    factID++;
+                }
+                else
+                {
+                    atomEntry.factID = addedFactIDNames[atomEntry.factName];
+                }
+            }
+
+            if(currentRule.factWrites!=null)
+            foreach (var factWrite in currentRule.factWrites)
+            {
+                
+                if (!addedFactIDNames.ContainsKey(factWrite.factName))
+                {
+                    factWrite.factID = factID;
+                    addedFactIDNames[factWrite.factName] = factID;
+                    factID++;
+                }
+                else
+                {
+                    factWrite.factID = addedFactIDNames[factWrite.factName];
+                }
+            }
+
+        }
+
         private static void ParseFactWrites(string line, RuleDBEntry currentRule)
         {
             var operands = new List<(string, RuleDBFactWrite.WriteMode)>
@@ -236,6 +274,12 @@ namespace FactMatcher
         
         private static void ParseRuleAtoms(string line, RuleDBEntry currentRule)
         {
+            if (line.Contains("Range"))
+            {
+                    
+                var splits = line.Split(new[] {"Range"}, StringSplitOptions.RemoveEmptyEntries);
+            }
+            
             var operands = new List<(string, RuleDBAtomEntry.Comparision)>
             {
                 (">", RuleDBAtomEntry.Comparision.MoreThan),
@@ -243,6 +287,7 @@ namespace FactMatcher
                 ("<", RuleDBAtomEntry.Comparision.LessThan),
                 ("<=", RuleDBAtomEntry.Comparision.LessThanEqual),
                 ("=", RuleDBAtomEntry.Comparision.Equal),
+                ("Range", RuleDBAtomEntry.Comparision.Range),
                 ("!", RuleDBAtomEntry.Comparision.NotEqual)
             };
             //Operands with multiple characters must be matched prior to operands of lower character..
@@ -269,18 +314,7 @@ namespace FactMatcher
                         atomEntry.compareMethod = operand.Item2;
                         atomEntry.factName = splits[0].Trim();
                         var valueMatch = splits[1].Trim();
-                        atomEntry.compareType = FactValueType.String;
-                        if (float.TryParse(valueMatch, out float floatVal))
-                        {
-                            atomEntry.matchValue = floatVal;
-                            atomEntry.compareType = FactValueType.Value;
-                        }
-                        else
-                        {
-                            atomEntry.matchString = valueMatch;
-                        }
-
-
+                        
                         //If we have added a rule - from derived - but are overwriting that fact-query , then delete the 
                         //derived rule , or else we would get two conflicting rule atoms in our rule...
                         if (currentRule.atoms.Any(entry => entry.factName.Equals(atomEntry.factName)))
@@ -289,7 +323,54 @@ namespace FactMatcher
                                 entry.factName.Equals(atomEntry.factName)));
                         }
 
-                        currentRule.atoms.Add(atomEntry);
+                        if (atomEntry.compareMethod == RuleDBAtomEntry.Comparision.Range)
+                        {
+                            //further parse out the Range..
+                            valueMatch = valueMatch.Trim();
+                            bool exclusiveLeft = valueMatch.Contains("(");
+                            bool exclusiveRight= valueMatch.Contains(")");
+                            
+                            var splitRange = valueMatch.Trim('(','[',')',']').Split(',');
+                            Debug.Log($"handling {valueMatch} in compareMethodRange");
+                            Debug.Log($"handling left val {splitRange[0]} in compareMethodRange");
+                            Debug.Log($"handling right val {splitRange[1]} in compareMethodRange");
+                            if (float.TryParse(splitRange[0], out float left))
+                            {
+                                atomEntry.matchValue = left;
+                                atomEntry.compareType = FactValueType.Value;
+                                atomEntry.compareMethod = exclusiveLeft
+                                    ? RuleDBAtomEntry.Comparision.MoreThan
+                                    : RuleDBAtomEntry.Comparision.MoreThanEqual; 
+                                if (float.TryParse(splitRange[1], out float right))
+                                {
+                                    RuleDBAtomEntry rangeEnd = new RuleDBAtomEntry();
+                                    rangeEnd.compareMethod = exclusiveRight
+                                        ? RuleDBAtomEntry.Comparision.LessThan
+                                        : RuleDBAtomEntry.Comparision.LessThanEqual;
+                                    rangeEnd.factName = atomEntry.factName;
+                                    rangeEnd.matchValue = right;
+                                    rangeEnd.compareType= FactValueType.Value;
+                            
+                                    currentRule.atoms.Add(atomEntry);
+                                    currentRule.atoms.Add(rangeEnd);
+                                }
+                            }
+                            
+                        }
+                        else
+                        {
+                            atomEntry.compareType = FactValueType.String;
+                            if (float.TryParse(valueMatch, out float floatVal))
+                            {
+                                atomEntry.matchValue = floatVal;
+                                atomEntry.compareType = FactValueType.Value;
+                            }
+                            else
+                            {
+                                atomEntry.matchString = valueMatch;
+                            }
+                            currentRule.atoms.Add(atomEntry);
+                        }
                     }
 
                     break;

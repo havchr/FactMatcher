@@ -1,0 +1,28 @@
+.LemonDeath
+player.concept = onDeath
+:FactWrite:
+commentator.oldAgeCommented = 0
+commentator.youngAgeCommented = 0
+:Response:
+You died
+:End:
+
+.LemonDeath.Old
+commentator.oldAgeCommented >= 1
+:FactWrite:
+commentator.oldAgeCommented = 0
+commentator.youngAgeCommented = 0
+:Response:
+You died - maybe because you are too old for this shit?
+:End:
+
+.LemonDeath.Young
+commentator.youngAgeCommented >= 1
+:FactWrite:
+commentator.oldAgeCommented = 0
+commentator.youngAgeCommented = 0
+:Response:
+You died -- you know, death. Maybe you don't understand the concept of death yet, since you are just a little kid.
+:End:
+
+

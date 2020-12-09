@@ -42,25 +42,12 @@ public class FactMatcherCodeGenerator
 			return -1;
 		}
 	}
-	
-    public static void GenerateFactIDS()
+    
+    public static void GenerateFactIDS(string filename,string namespaceName,RulesDB rulesDB)
     {
 	    
-        var rulesDB =  Resources.LoadAll<RulesDB>("");
-	    WriteClassContentsToDisk(filename:"GeneratedFacts.cs",namespaceName:"GeneratedFacts",rulesDB);
-    }
-    
-    public static void GenerateFactIDS(string fileName,string nameSpaceName,RulesDB rules)
-    {
-	    WriteClassContentsToDisk(fileName,nameSpaceName,rules);
-    }
-	
-	private static void WriteClassContentsToDisk(string filename = "GeneratedFacts.cs",
-		string namespaceName = "FactMatcherGenData",
-		params RulesDB[] rulesContainer)
-	{
-		var allKnownFacts = ExtractAllKnownFacts(rulesContainer);
-		var allKnownRules= ExtractAllKnownRules(rulesContainer);
+		var allKnownFacts = ExtractAllKnownFacts(rulesDB);
+		var allKnownRules= ExtractAllKnownRules(rulesDB);
 		var classContents = BuildClassContents(namespaceName, allKnownFacts,allKnownRules);
 
 		var assetPathToSave = $"Assets/{filename}";
@@ -75,20 +62,15 @@ public class FactMatcherCodeGenerator
 		filePath = filePath.Replace("/", "\\");
 		File.WriteAllText(filePath, classContents);
 		AssetDatabase.ImportAsset(assetPathToSave);
-	}
+    }
 
-	private static List<string> ExtractAllKnownRules(RulesDB[] rulesContainer)
+	private static List<string> ExtractAllKnownRules(RulesDB rulesDB)
 	{
 		 List<string> allKnownRules = new List<string>();
-
-		foreach (var rulesDB in rulesContainer)
+		foreach (var rule in rulesDB.rules)
 		{
-			foreach (var rule in rulesDB.rules)
-			{
-				var ruleName = GenRuleName(rule);
-				allKnownRules.Add(ruleName);
-			}
-
+			var ruleName = GenRuleName(rule);
+			allKnownRules.Add(ruleName);
 		}
 
 		return allKnownRules;
@@ -103,77 +85,94 @@ public class FactMatcherCodeGenerator
 
 	public static int CountNumberOfFacts(RulesDB ruleDB)
 	{
+		int topFactID = 0;
+		foreach (var rule in ruleDB.rules)
+		{
+
+			foreach (var atom in rule.atoms)
+			{
+				if (atom.factID > topFactID)
+				{
+					topFactID = atom.factID;
+				}
+			}
+			
+			foreach (var factWrite in rule.factWrites)
+			{
+				if (factWrite.factID > topFactID)
+				{
+					topFactID = factWrite.factID;
+				}
+			}
+		}
+
+		return topFactID + 1;
+		
+		/*
 		var result = ExtractAllKnownFacts(ruleDB);
 		int count = 0;
 		foreach (var res in result)
 		{
 			count += res.Value.Count;
 		}
-		return count;
+		return count;*/
 	}
-	private static Dictionary<string, List<string>> ExtractAllKnownFacts(params RulesDB[] rulesContainer)
+	private static Dictionary<string, List<(string,int)>> ExtractAllKnownFacts(RulesDB rulesDB)
 	{
-		Dictionary<string, List<string>> allKnownFacts = new Dictionary<string, List<string>>();
+		Dictionary<string, List<(string,int) >> allKnownFacts = new Dictionary<string, List<(string,int)>>();
 		//Todo handle clashing keys , for instance  A.FactDB with global and B.FactDB also with global
 		//extract all facts..
-		foreach (var rulesDB in rulesContainer)
+		foreach (var rule in rulesDB.rules)
 		{
-			foreach (var rule in rulesDB.rules)
+			if (!allKnownFacts.ContainsKey(rule.ruleName))
 			{
-				if (!allKnownFacts.ContainsKey(rule.ruleName))
-				{
-					allKnownFacts[rule.ruleName] = new List<string>();
-				}
+				allKnownFacts[rule.ruleName] = new List<(string,int)>();
+			}
 
 
-				foreach (var atom in rule.atoms)
+			foreach (var atom in rule.atoms)
+			{
+				//Parsing out atom.factName which is expected to be in form namespace.fact , for instance player.health is namespace player and fact health.
+				if (atom.factName!=null && atom.factName.Length > 1)
 				{
-					//Parsing out atom.factName which is expected to be in form namespace.fact , for instance player.health is namespace player and fact health.
-					if (atom.factName!=null && atom.factName.Length > 1)
+					var genNames = CreateFactVariableNameFromFact(atom.factName);
+					var key = genNames.Item1;
+					var factName  = genNames.Item2;
+					if (!allKnownFacts.ContainsKey(key))
 					{
-						var genNames = CreateFactVariableNameFromFact(atom.factName);
+						allKnownFacts[ key ] = new List<(string,int)>();
+					}
+
+					if (!allKnownFacts[key].Contains((factName,atom.factID)))
+					{
+						allKnownFacts[ key ].Add((factName,atom.factID));
+					}
+						
+				}
+			}
+
+			if (rule.factWrites != null)
+			{
+				foreach (var factWrite in rule.factWrites)
+				{
+					
+					if (factWrite.factName !=null && factWrite.factName.Length > 1)
+					{
+						var genNames = CreateFactVariableNameFromFact(factWrite.factName);
+
 						var key = genNames.Item1;
 						var factName  = genNames.Item2;
+						
 						if (!allKnownFacts.ContainsKey(key))
 						{
-							allKnownFacts[ key ] = new List<string>();
+							allKnownFacts[ key ] = new List<(string,int)>();
 						}
 
-						if (!allKnownFacts[key].Contains(factName))
+						if (!allKnownFacts[key].Contains((factName,factWrite.factID)))
 						{
-							allKnownFacts[ key ].Add(factName);
+							allKnownFacts[ key ].Add((factName,factWrite.factID));
 						}
-							
-					}
-				}
-
-				if (rule.factWrites != null)
-				{
-					foreach (var factWrite in rule.factWrites)
-					{
 						
-						if (factWrite.factName !=null && factWrite.factName.Length > 1)
-						{
-							var genNames = CreateFactVariableNameFromFact(factWrite.factName);
-
-							var key = genNames.Item1;
-							var factName  = genNames.Item2;
-							if (key.Equals(factWrite.factName))
-							{
-								key = "Global";
-							}
-							
-							if (!allKnownFacts.ContainsKey(key))
-							{
-								allKnownFacts[ key ] = new List<string>();
-							}
-
-							if (!allKnownFacts[key].Contains(factName))
-							{
-								allKnownFacts[ key ].Add(factName);
-							}
-							
-						}
 					}
 				}
 			}
@@ -214,7 +213,7 @@ public class FactMatcherCodeGenerator
         /// <param name="namespaceName"></param>
         /// <param name="enumName"></param>
         /// <returns></returns>
-        private static string BuildClassContents(string namespaceName, Dictionary<string, List<string> > facts, List<string>  rules)
+        private static string BuildClassContents(string namespaceName, Dictionary<string, List<(string,int)> > facts, List<string>  rules)
 	{
 		//tabs is four spaces
 		string tabs = "    ";
@@ -246,18 +245,15 @@ public class FactMatcherCodeGenerator
             {
 	            if (factContainer.Value.Count >= 1)
 	            {
-		            
-	            
-				stringBuilder.AppendLine((isUsingNamespace ? tabs : "") + "public static class " + factContainer.Key);
-				stringBuilder.AppendLine((isUsingNamespace ? tabs : "") + "{");
-				foreach (string name in factContainer.Value)
-				{
-					//stringBuilder.AppendLine((isUsingNamespace ? "\t" : "") + "\tpublic const string " + name + " = \"" + name + "\";");
-					stringBuilder.AppendLine((isUsingNamespace ? tabs : "") + $"{tabs}public const int " + name + " = " + index + ";");
-					index++;
-				}
-            
-				stringBuilder.AppendLine((isUsingNamespace ? tabs : "") + "}").AppendLine();
+					stringBuilder.AppendLine((isUsingNamespace ? tabs : "") + "public static class " + factContainer.Key);
+					stringBuilder.AppendLine((isUsingNamespace ? tabs : "") + "{");
+					foreach (var nameAndID in factContainer.Value)
+					{
+						stringBuilder.AppendLine((isUsingNamespace ? tabs : "") + $"{tabs}public const int " + nameAndID.Item1 + " = " + nameAndID.Item2 + ";");
+						index++;
+					}
+				
+					stringBuilder.AppendLine((isUsingNamespace ? tabs : "") + "}").AppendLine();
 	            }
             }
             

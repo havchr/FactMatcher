@@ -75,6 +75,14 @@ namespace FactMatcher
             {
                 return new RuleCompare(a,float.MaxValue,epsiFact);
             }
+            public static RuleCompare RangeEquals(float a,float b)
+            {
+                return new RuleCompare(a,b,epsiFact);
+            }
+            public static RuleCompare Range(float a,float b)
+            {
+                return new RuleCompare(a,b);
+            }
             public readonly float lowerBound;
             public readonly float upperBound;
             public readonly float epsilon;
@@ -112,8 +120,7 @@ namespace FactMatcher
             rules[i] = new FactMatcher.FMRule(ruleFiredEventID, atomIndex, db.rules[i].atoms.Count);
             foreach (var atom in db.rules[i].atoms)
             {
-                int factID = FactMatcherCodeGenerator.FactIDReflection(atom, db.GetNameSpaceName());
-                ruleAtoms[atomIndex] = new FactMatcher.RuleAtom(factID, i, atom.CreateCompare());
+                ruleAtoms[atomIndex] = new FactMatcher.RuleAtom(atom.factID, i, atom.CreateCompare(db));
                 atomIndex++;
             }
         }

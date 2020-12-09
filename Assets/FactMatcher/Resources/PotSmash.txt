@@ -1,0 +1,94 @@
+--To experiment with creating more specific rules
+--You can try to create potSmash dialogue that also checks the weather
+--For instance.. No/little rupees cold weather and rain , can be combined into one depressive pot-smash dialogue.
+
+.LemonSteals
+player.name = Lemon
+player.concept = onSteal 
+:Response:
+Lemon steals a rupee.
+:End:
+
+.LemonPotSmash
+player.name = Lemon
+player.concept = onPotSmash
+potsmash.rupeesInLastPot = 0
+:FactWrite:
+commentator.potSmashCount = 1
+:Response:
+Lemon Smashes a pot to see if there's any coin in it.
+:End:
+
+.LemonPotSmash.Cont2
+commentator.potSmashCount = 1
+:FactWrite:
+commentator.potSmashCount += 1
+:Response:
+Lemon is reckless.
+:End:
+
+.LemonPotSmash.Cont3
+commentator.potSmashCount = 2
+:FactWrite:
+commentator.potSmashCount += 1
+:Response:
+Rupees , ruupes, is all Lemon wants.
+:End:
+
+.LemonPotSmash.Cont4
+commentator.potSmashCount = 3
+:FactWrite:
+commentator.potSmashCount += 1
+:Response:
+Rupees , ruupes, is all Lemon wants.
+:End:
+
+
+.LemonPotSmash.smallPayout
+potsmash.rupeesInLastPot Range(0,5]
+:FactWrite:
+commentator.potSmashCount = 0
+:Response:
+Always just a little trinket for Lemon. Never big rupees.
+:End:
+
+.LemonPotSmash.smallPayout2
+potsmash.rupeesInLastPot  Range(5,50]
+:FactWrite:
+commentator.potSmashCount = 0
+:Response:
+Wow - finally at least some rupees. Maybe Lemon could buy an Orange.
+:End:
+
+.LemonPotSmash.mediumPayout
+potsmash.rupeesInLastPot  Range(50,100]
+:FactWrite:
+commentator.potSmashCount = 0
+:Response:
+Nice - a solid bunch of rupees - Lemon was right to smash these pots.
+:End:
+
+.LemonPotSmash.BigPayout
+potsmash.rupeesInLastPot  Range(100,3000]
+:FactWrite:
+commentator.potSmashCount = 0
+:Response:
+Oh sweet rupee-licious!
+:End:
+
+
+.LemonPotSmash.GigaPayout
+potsmash.rupeesInLastPot > 3000
+:FactWrite:
+commentator.potSmashCount = 0
+:Response:
+Lemon Lemon on the wall - who steals your saving - after all!? LemonParty - Rupees all night!
+:End:
+
+.LemonPotSmash.BigPayout.Cont4
+commentator.potSmashCount = 3
+:FactWrite:
+commentator.potSmashCount += 1
+:Response:
+Sweet, Lemon found a sweet bunch of rupees. As always, the third pot is the charm. Lemon is sure this old grandma already forgot where she was hiding them rupees.
+:End:

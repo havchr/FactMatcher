@@ -1,0 +1,75 @@
+-- A comment starts with -- , but, remark,it is not handled within the response block..
+-- Variables start with a namespace. If none is given, it will be automatically be given global as the namespace
+-- The variables defined here will end up in generated c# code with a similar name to the RuleDB asset
+-- Everything is case-sensitive..
+-- Deriving another rule allows you to copy all the checks of that rule. See rule below for an example
+
+--Here follows some examples of "vocalizing" situations with 
+--different responses based on facts of the game/state
+--In this example , a player called Lemon is welcomed -  
+--A bunch of weather facts is used to create specific dialog.
+
+.Welcome
+player.concept = onJoin
+:Response:
+Hello player. welcome
+:End:
+
+.WelcomeLemon
+player.name = Lemon
+player.concept = onJoin
+:Response:
+Hello Lemon - welcome. Enjoy this example. If life gives you Lemon...Lemonade!
+:End:
+
+.WelcomeLemon.Cold
+weather.temperature < 10
+:Response:
+Hello. Welcome to this example. Today it is cold. We have given you the name, Lemon.
+Because, life.. it's like you - like Lemons. So make Lemonade even if it is less than ten degrees.
+:End:
+
+
+.WelcomeLemon.ColdRainNorway
+currentMap = Norway
+weather.rainMs > 10
+weather.temperature < 10
+:Response:
+Welcome Lemon. It rains like hell and it's cold. Welcome to Norway
+:End:
+
+.WelcomeLemon.ColdRainWindy
+weather.rainMs > 10
+weather.windMs > 40
+weather.temperature < 10
+:Response:
+Welcome Lemon. It rains like hell and it's cold. The wind is howling.  
+:End:
+
+--If you want to a value like thunderPerSecond being 5 to trigger at thunderPerSecond < 8 , and not
+--Trigger at thunderPerSecond < 40 (which is also true) - either use range, or have them in order so 
+-- because it will not overwrite the selected rule if they have the same amount of matching arguments..
+
+.WelcomeLemon.ColdRainWindy.Thunderstorm
+weather.thunderPerSecond < 8
+:Response:
+Welcome Lemon - to this wild and cold thunderstorm.
+:End:
+
+.WelcomeLemon.ColdRainWindy.DistantThunder
+weather.thunderPerSecond < 40
+:Response:
+Welcome Lemon. It rains like hell and it's cold. The wind is howling. I can hear a thunderstorm in the distance.
+:End:
+
+
+.WelcomeLemon.WarmThunderstormYoung
+player.age < 10 
+weather.temperature > 20
+weather.rainMs < 8
+weather.thunderPerSecond < 8
+:Response:
+Lemon was just a young boy when he found himself lost in the worst and most absurd thunderstorm he'd ever seen.
+It was thundering wild, but at the same time, almost no rain and it was quite warm.
+:End:
+

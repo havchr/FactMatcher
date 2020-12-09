@@ -23,6 +23,8 @@ using Sirenix.Utilities;
 [Serializable]
 public class RuleDBFactWrite
 {
+    
+    public int factID;
     public string factName;
     public string writeString;
     public float writeValue;
@@ -38,6 +40,7 @@ public class RuleDBFactWrite
 [Serializable]
 public class RuleDBAtomEntry
 {
+    public int factID;
     public string factName;
     public string matchString;
     public float matchValue;
@@ -46,13 +49,13 @@ public class RuleDBAtomEntry
 
     public enum Comparision
     {
-        Equal,NotEqual,LessThan,MoreThan,LessThanEqual,MoreThanEqual
+        Equal,NotEqual,LessThan,MoreThan,LessThanEqual,MoreThanEqual,Range
     }
 
-    public FactMatcher.RuleCompare CreateCompare()
+    public FactMatcher.RuleCompare CreateCompare(RulesDB rules)
     {
         //used in the fact system 
-        var val = compareType == FactValueType.String ?  RulesDB.StringId(matchString) : matchValue;
+        var val = compareType == FactValueType.String ?  rules.StringId(matchString) : matchValue;
         switch (compareMethod)
         {
             case Comparision.Equal:
@@ -169,10 +172,12 @@ ScriptableObject
         if (generateFrom != null)
         {
             rules.Clear();
+            int factID = 0;
+            Dictionary<string,int> addedFactIDS = new Dictionary<string, int>();
             foreach (var ruleScript in generateFrom)
             {
                 var parser = new RuleScriptParser();
-                parser.GenerateFromText(ruleScript.text,rules); 
+                parser.GenerateFromText(ruleScript.text,rules,ref factID,ref addedFactIDS); 
             }
             GenerateFactIDS();
         }
@@ -234,20 +239,20 @@ ScriptableObject
         }
     }
 
-    private static Dictionary<string, int> RuleStringMap;
+    private Dictionary<string, int> RuleStringMap;
     
-    private static Dictionary<int, RuleDBEntry> RuleMap;
+    private Dictionary<int, RuleDBEntry> RuleMap;
 
-    public static void InitAllRuleDB()
+    public void InitRuleDB()
     {
         RuleStringMap = RuleStringIDs();
         RuleMap = CreateEntryFromIDDic();
     }
-    public static int StringId(string str)
+    public int StringId(string str)
     {
         if (RuleStringMap == null)
         {
-            InitAllRuleDB();
+            InitRuleDB();
         }
         int id = -1;
         if (!RuleStringMap.TryGetValue(str, out id))
@@ -260,11 +265,11 @@ ScriptableObject
     
     //Todo - better way to access RuleFromID since we now just store everything in a dictionary ... ? 
     //This is not exactly elegant
-    public static RuleDBEntry RuleFromID(int id)
+    public RuleDBEntry RuleFromID(int id)
     {
         if (RuleMap == null)
         {
-            InitAllRuleDB();
+            InitRuleDB();
         }
 
         RuleDBEntry rule;
