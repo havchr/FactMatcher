@@ -6,4 +6,4 @@ The textfiles are parsed into a set of rules - everything is converted into floa
 
 See the example files in the project
 
-
+This is by no means intended to be production ready, but can be used to play around with a FactMatching based approach to dialog selection
