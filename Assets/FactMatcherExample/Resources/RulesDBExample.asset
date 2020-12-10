@@ -17,7 +17,8 @@ MonoBehaviour:
   - {fileID: 4900000, guid: 35477e9a2f11ada469b6ac94b8e30d71, type: 3}
   - {fileID: 4900000, guid: 6b612583c60f150478bb739157e751c2, type: 3}
   rules:
-  - ruleName: Welcome
+  - RuleID: 0
+    ruleName: Welcome
     payload: Hello player. welcome
     factWrites: []
     atoms:
@@ -27,7 +28,8 @@ MonoBehaviour:
       matchValue: 0
       compareMethod: 0
       compareType: 0
-  - ruleName: WelcomeLemon
+  - RuleID: 1
+    ruleName: WelcomeLemon
     payload: Hello Lemon - welcome. Enjoy this example. If life gives you Lemon...Lemonade!
     factWrites: []
     atoms:
@@ -43,7 +45,8 @@ MonoBehaviour:
       matchValue: 0
       compareMethod: 0
       compareType: 0
-  - ruleName: WelcomeLemon.Cold
+  - RuleID: 2
+    ruleName: WelcomeLemon.Cold
     payload: Hello. Welcome to this example. Today it is cold. We have given you
       the name, Lemon.Because, life.. it's like you - like Lemons. So make Lemonade
       even if it is less than ten degrees.
@@ -67,7 +70,8 @@ MonoBehaviour:
       matchValue: 10
       compareMethod: 2
       compareType: 1
-  - ruleName: WelcomeLemon.ColdRainNorway
+  - RuleID: 3
+    ruleName: WelcomeLemon.ColdRainNorway
     payload: Welcome Lemon. It rains like hell and it's cold. Welcome to Norway
     factWrites: []
     atoms:
@@ -101,7 +105,8 @@ MonoBehaviour:
       matchValue: 10
       compareMethod: 2
       compareType: 1
-  - ruleName: WelcomeLemon.ColdRainWindy
+  - RuleID: 4
+    ruleName: WelcomeLemon.ColdRainWindy
     payload: 'Welcome Lemon. It rains like hell and it''s cold. The wind is howling.  '
     factWrites: []
     atoms:
@@ -135,7 +140,8 @@ MonoBehaviour:
       matchValue: 10
       compareMethod: 2
       compareType: 1
-  - ruleName: WelcomeLemon.ColdRainWindy.Thunderstorm
+  - RuleID: 5
+    ruleName: WelcomeLemon.ColdRainWindy.Thunderstorm
     payload: Welcome Lemon - to this wild and cold thunderstorm.
     factWrites: []
     atoms:
@@ -175,7 +181,8 @@ MonoBehaviour:
       matchValue: 8
       compareMethod: 2
       compareType: 1
-  - ruleName: WelcomeLemon.ColdRainWindy.DistantThunder
+  - RuleID: 6
+    ruleName: WelcomeLemon.ColdRainWindy.DistantThunder
     payload: Welcome Lemon. It rains like hell and it's cold. The wind is howling.
       I can hear a thunderstorm in the distance.
     factWrites: []
@@ -216,11 +223,17 @@ MonoBehaviour:
       matchValue: 40
       compareMethod: 2
       compareType: 1
-  - ruleName: WelcomeLemon.WarmThunderstormYoung
+  - RuleID: 7
+    ruleName: WelcomeLemon.WarmThunderstormYoung
     payload: Lemon was just a young boy when he found himself lost in the worst and
       most absurd thunderstorm he'd ever seen.It was thundering wild, but at the
       same time, almost no rain and it was quite warm.
-    factWrites: []
+    factWrites:
+    - factID: 8
+      factName: commentator.youngAgeCommented
+      writeString: 
+      writeValue: 1
+      writeMode: 1
     atoms:
     - factID: 1
       factName: player.name
@@ -258,7 +271,57 @@ MonoBehaviour:
       matchValue: 8
       compareMethod: 2
       compareType: 1
-  - ruleName: LemonSteals
+  - RuleID: 8
+    ruleName: WelcomeLemon.WarmThunderstormOld
+    payload: Lemon was an old man he found himself lost in the worst and most absurd
+      thunderstorm he'd ever seen.It was thundering wild, but at the same time, almost
+      no rain and it was quite warm. Never before in his long lived life had he seen
+      such a thing.
+    factWrites:
+    - factID: 9
+      factName: commentator.oldAgeCommented
+      writeString: 
+      writeValue: 1
+      writeMode: 1
+    atoms:
+    - factID: 1
+      factName: player.name
+      matchString: Lemon
+      matchValue: 0
+      compareMethod: 0
+      compareType: 0
+    - factID: 0
+      factName: player.concept
+      matchString: onJoin
+      matchValue: 0
+      compareMethod: 0
+      compareType: 0
+    - factID: 7
+      factName: player.age
+      matchString: 
+      matchValue: 70
+      compareMethod: 3
+      compareType: 1
+    - factID: 2
+      factName: weather.temperature
+      matchString: 
+      matchValue: 20
+      compareMethod: 3
+      compareType: 1
+    - factID: 4
+      factName: weather.rainMs
+      matchString: 
+      matchValue: 8
+      compareMethod: 2
+      compareType: 1
+    - factID: 6
+      factName: weather.thunderPerSecond
+      matchString: 
+      matchValue: 8
+      compareMethod: 2
+      compareType: 1
+  - RuleID: 9
+    ruleName: LemonSteals
     payload: Lemon steals a rupee.
     factWrites: []
     atoms:
@@ -274,10 +337,11 @@ MonoBehaviour:
       matchValue: 0
       compareMethod: 0
       compareType: 0
-  - ruleName: LemonPotSmash
+  - RuleID: 10
+    ruleName: LemonPotSmash
     payload: Lemon Smashes a pot to see if there's any coin in it.
     factWrites:
-    - factID: 9
+    - factID: 11
       factName: commentator.potSmashCount
       writeString: 
       writeValue: 1
@@ -295,16 +359,17 @@ MonoBehaviour:
       matchValue: 0
       compareMethod: 0
       compareType: 0
-    - factID: 8
+    - factID: 10
       factName: potsmash.rupeesInLastPot
       matchString: 
       matchValue: 0
       compareMethod: 0
       compareType: 1
-  - ruleName: LemonPotSmash.Cont2
+  - RuleID: 11
+    ruleName: LemonPotSmash.Cont2
     payload: Lemon is reckless.
     factWrites:
-    - factID: 9
+    - factID: 11
       factName: commentator.potSmashCount
       writeString: 
       writeValue: 1
@@ -322,22 +387,23 @@ MonoBehaviour:
       matchValue: 0
       compareMethod: 0
       compareType: 0
-    - factID: 8
+    - factID: 10
       factName: potsmash.rupeesInLastPot
       matchString: 
       matchValue: 0
       compareMethod: 0
       compareType: 1
-    - factID: 9
+    - factID: 11
       factName: commentator.potSmashCount
       matchString: 
       matchValue: 1
       compareMethod: 0
       compareType: 1
-  - ruleName: LemonPotSmash.Cont3
+  - RuleID: 12
+    ruleName: LemonPotSmash.Cont3
     payload: Rupees , ruupes, is all Lemon wants.
     factWrites:
-    - factID: 9
+    - factID: 11
       factName: commentator.potSmashCount
       writeString: 
       writeValue: 1
@@ -355,22 +421,23 @@ MonoBehaviour:
       matchValue: 0
       compareMethod: 0
       compareType: 0
-    - factID: 8
+    - factID: 10
       factName: potsmash.rupeesInLastPot
       matchString: 
       matchValue: 0
       compareMethod: 0
       compareType: 1
-    - factID: 9
+    - factID: 11
       factName: commentator.potSmashCount
       matchString: 
       matchValue: 2
       compareMethod: 0
       compareType: 1
-  - ruleName: LemonPotSmash.Cont4
+  - RuleID: 13
+    ruleName: LemonPotSmash.Cont4
     payload: Rupees , ruupes, is all Lemon wants.
     factWrites:
-    - factID: 9
+    - factID: 11
       factName: commentator.potSmashCount
       writeString: 
       writeValue: 1
@@ -388,22 +455,23 @@ MonoBehaviour:
       matchValue: 0
       compareMethod: 0
       compareType: 0
-    - factID: 8
+    - factID: 10
       factName: potsmash.rupeesInLastPot
       matchString: 
       matchValue: 0
       compareMethod: 0
       compareType: 1
-    - factID: 9
+    - factID: 11
       factName: commentator.potSmashCount
       matchString: 
       matchValue: 3
       compareMethod: 0
       compareType: 1
-  - ruleName: LemonPotSmash.smallPayout
+  - RuleID: 14
+    ruleName: LemonPotSmash.smallPayout
     payload: Always just a little trinket for Lemon. Never big rupees.
     factWrites:
-    - factID: 9
+    - factID: 11
       factName: commentator.potSmashCount
       writeString: 
       writeValue: 0
@@ -421,22 +489,23 @@ MonoBehaviour:
       matchValue: 0
       compareMethod: 0
       compareType: 0
-    - factID: 8
+    - factID: 10
       factName: potsmash.rupeesInLastPot
       matchString: 
       matchValue: 0
       compareMethod: 3
       compareType: 1
-    - factID: 8
+    - factID: 10
       factName: potsmash.rupeesInLastPot
       matchString: 
       matchValue: 5
       compareMethod: 4
       compareType: 1
-  - ruleName: LemonPotSmash.smallPayout2
+  - RuleID: 15
+    ruleName: LemonPotSmash.smallPayout2
     payload: Wow - finally at least some rupees. Maybe Lemon could buy an Orange.
     factWrites:
-    - factID: 9
+    - factID: 11
       factName: commentator.potSmashCount
       writeString: 
       writeValue: 0
@@ -454,22 +523,23 @@ MonoBehaviour:
       matchValue: 0
       compareMethod: 0
       compareType: 0
-    - factID: 8
+    - factID: 10
       factName: potsmash.rupeesInLastPot
       matchString: 
       matchValue: 5
       compareMethod: 3
       compareType: 1
-    - factID: 8
+    - factID: 10
       factName: potsmash.rupeesInLastPot
       matchString: 
       matchValue: 50
       compareMethod: 4
       compareType: 1
-  - ruleName: LemonPotSmash.mediumPayout
+  - RuleID: 16
+    ruleName: LemonPotSmash.mediumPayout
     payload: Nice - a solid bunch of rupees - Lemon was right to smash these pots.
     factWrites:
-    - factID: 9
+    - factID: 11
       factName: commentator.potSmashCount
       writeString: 
       writeValue: 0
@@ -487,22 +557,23 @@ MonoBehaviour:
       matchValue: 0
       compareMethod: 0
       compareType: 0
-    - factID: 8
+    - factID: 10
       factName: potsmash.rupeesInLastPot
       matchString: 
       matchValue: 50
       compareMethod: 3
       compareType: 1
-    - factID: 8
+    - factID: 10
       factName: potsmash.rupeesInLastPot
       matchString: 
       matchValue: 100
       compareMethod: 4
       compareType: 1
-  - ruleName: LemonPotSmash.BigPayout
+  - RuleID: 17
+    ruleName: LemonPotSmash.BigPayout
     payload: Oh sweet rupee-licious!
     factWrites:
-    - factID: 9
+    - factID: 11
       factName: commentator.potSmashCount
       writeString: 
       writeValue: 0
@@ -520,23 +591,24 @@ MonoBehaviour:
       matchValue: 0
       compareMethod: 0
       compareType: 0
-    - factID: 8
+    - factID: 10
       factName: potsmash.rupeesInLastPot
       matchString: 
       matchValue: 100
       compareMethod: 3
       compareType: 1
-    - factID: 8
+    - factID: 10
       factName: potsmash.rupeesInLastPot
       matchString: 
       matchValue: 3000
       compareMethod: 4
       compareType: 1
-  - ruleName: LemonPotSmash.GigaPayout
+  - RuleID: 18
+    ruleName: LemonPotSmash.GigaPayout
     payload: Lemon Lemon on the wall - who steals your saving - after all!? LemonParty
       - Rupees all night!
     factWrites:
-    - factID: 9
+    - factID: 11
       factName: commentator.potSmashCount
       writeString: 
       writeValue: 0
@@ -554,18 +626,19 @@ MonoBehaviour:
       matchValue: 0
       compareMethod: 0
       compareType: 0
-    - factID: 8
+    - factID: 10
       factName: potsmash.rupeesInLastPot
       matchString: 
       matchValue: 3000
       compareMethod: 3
       compareType: 1
-  - ruleName: LemonPotSmash.BigPayout.Cont4
+  - RuleID: 19
+    ruleName: LemonPotSmash.BigPayout.Cont4
     payload: Sweet, Lemon found a sweet bunch of rupees. As always, the third pot
       is the charm. Lemon is sure this old grandma already forgot where she was hiding
       them rupees.
     factWrites:
-    - factID: 9
+    - factID: 11
       factName: commentator.potSmashCount
       writeString: 
       writeValue: 1
@@ -583,33 +656,34 @@ MonoBehaviour:
       matchValue: 0
       compareMethod: 0
       compareType: 0
-    - factID: 8
+    - factID: 10
       factName: potsmash.rupeesInLastPot
       matchString: 
       matchValue: 100
       compareMethod: 3
       compareType: 1
-    - factID: 8
+    - factID: 10
       factName: potsmash.rupeesInLastPot
       matchString: 
       matchValue: 3000
       compareMethod: 4
       compareType: 1
-    - factID: 9
+    - factID: 11
       factName: commentator.potSmashCount
       matchString: 
       matchValue: 3
       compareMethod: 0
       compareType: 1
-  - ruleName: LemonDeath
+  - RuleID: 20
+    ruleName: LemonDeath
     payload: You died
     factWrites:
-    - factID: 10
+    - factID: 9
       factName: commentator.oldAgeCommented
       writeString: 
       writeValue: 0
       writeMode: 1
-    - factID: 11
+    - factID: 8
       factName: commentator.youngAgeCommented
       writeString: 
       writeValue: 0
@@ -621,15 +695,16 @@ MonoBehaviour:
       matchValue: 0
       compareMethod: 0
       compareType: 0
-  - ruleName: LemonDeath.Old
+  - RuleID: 21
+    ruleName: LemonDeath.Old
     payload: You died - maybe because you are too old for this shit?
     factWrites:
-    - factID: 10
+    - factID: 9
       factName: commentator.oldAgeCommented
       writeString: 
       writeValue: 0
       writeMode: 1
-    - factID: 11
+    - factID: 8
       factName: commentator.youngAgeCommented
       writeString: 
       writeValue: 0
@@ -641,22 +716,23 @@ MonoBehaviour:
       matchValue: 0
       compareMethod: 0
       compareType: 0
-    - factID: 10
+    - factID: 9
       factName: commentator.oldAgeCommented
       matchString: 
       matchValue: 1
       compareMethod: 5
       compareType: 1
-  - ruleName: LemonDeath.Young
+  - RuleID: 22
+    ruleName: LemonDeath.Young
     payload: You died -- you know, death. Maybe you don't understand the concept
       of death yet, since you are just a little kid.
     factWrites:
-    - factID: 10
+    - factID: 9
       factName: commentator.oldAgeCommented
       writeString: 
       writeValue: 0
       writeMode: 1
-    - factID: 11
+    - factID: 8
       factName: commentator.youngAgeCommented
       writeString: 
       writeValue: 0
@@ -668,7 +744,7 @@ MonoBehaviour:
       matchValue: 0
       compareMethod: 0
       compareType: 0
-    - factID: 11
+    - factID: 8
       factName: commentator.youngAgeCommented
       matchString: 
       matchValue: 1

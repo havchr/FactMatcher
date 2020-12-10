@@ -11,37 +11,6 @@ public class FactMatcherCodeGenerator
 {
 
 	//Todo write test cases
-
-	public static int RuleIDReflection(RuleDBEntry rule,string namespaceName)
-	{
-		try
-		{
-			var ruleFiredEventID = (int) Type.GetType($"{namespaceName}.RuleIDs")
-				                             .GetField(GenRuleName(rule))
-				                             .GetRawConstantValue();
-			return ruleFiredEventID;
-		}
-		catch (Exception e)
-		{
-			return -1;
-		}
-	}
-	
-	public static int FactIDReflection(RuleDBAtomEntry atom,string namespaceName)
-	{
-		var genNames = CreateFactVariableNameFromFact(atom.factName);
-		try
-		{
-			var factID = (int) Type.GetType($"{namespaceName}.{genNames.Item1}")
-				                   .GetField(genNames.Item2)
-						           .GetRawConstantValue();
-			return factID;
-		}
-		catch (Exception e)
-		{
-			return -1;
-		}
-	}
     
     public static void GenerateFactIDS(string filename,string namespaceName,RulesDB rulesDB)
     {
@@ -64,13 +33,13 @@ public class FactMatcherCodeGenerator
 		AssetDatabase.ImportAsset(assetPathToSave);
     }
 
-	private static List<string> ExtractAllKnownRules(RulesDB rulesDB)
+	private static List<(string,int)> ExtractAllKnownRules(RulesDB rulesDB)
 	{
-		 List<string> allKnownRules = new List<string>();
+		 List<(string,int)> allKnownRules = new List<(string,int)>();
 		foreach (var rule in rulesDB.rules)
 		{
 			var ruleName = GenRuleName(rule);
-			allKnownRules.Add(ruleName);
+			allKnownRules.Add((ruleName,rule.RuleID));
 		}
 
 		return allKnownRules;
@@ -213,7 +182,7 @@ public class FactMatcherCodeGenerator
         /// <param name="namespaceName"></param>
         /// <param name="enumName"></param>
         /// <returns></returns>
-        private static string BuildClassContents(string namespaceName, Dictionary<string, List<(string,int)> > facts, List<string>  rules)
+        private static string BuildClassContents(string namespaceName, Dictionary<string, List<(string,int)> > facts, List<(string,int)>  rules)
 	{
 		//tabs is four spaces
 		string tabs = "    ";
@@ -234,8 +203,8 @@ public class FactMatcherCodeGenerator
 			
             for (int ruleIndex = 0; ruleIndex < rules.Count; ruleIndex++)
             {
-	            var rule = rules[ruleIndex];
-	            stringBuilder.AppendLine((isUsingNamespace ? tabs : "") + "\tpublic const int " + rule + " = " + ruleIndex + ";");
+	            var rule = rules[ruleIndex].Item1;
+	            stringBuilder.AppendLine((isUsingNamespace ? tabs : "") + "\tpublic const int " + rule + " = " + rules[ruleIndex].Item2+ ";");
             }
 				
             stringBuilder.AppendLine((isUsingNamespace ? tabs : "") + "}").AppendLine();
@@ -261,7 +230,10 @@ public class FactMatcherCodeGenerator
             
 			stringBuilder.AppendLine((isUsingNamespace ? tabs : "") + "public static class FactMatcherData");
 			stringBuilder.AppendLine((isUsingNamespace ? tabs : "") + "{");
-			stringBuilder.AppendLine((isUsingNamespace ? tabs : "") + $"{tabs}public static NativeArray<float> factValues = new NativeArray<float>({index},Allocator.Persistent);");
+			stringBuilder.AppendLine((isUsingNamespace ? tabs : "") + $"{tabs}public static NativeArray<float> CreateFactValues()"); 
+			stringBuilder.AppendLine((isUsingNamespace ? tabs : "") + "{"); 
+			stringBuilder.AppendLine((isUsingNamespace ? tabs : "") + tabs + $"return new NativeArray<float>({index},Allocator.Persistent);"); 
+			stringBuilder.AppendLine((isUsingNamespace ? tabs : "") + "}"); 
 			
 			stringBuilder.AppendLine((isUsingNamespace ? tabs : "") + "}");
             

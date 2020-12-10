@@ -14,7 +14,7 @@ namespace FactMatcher
         {
             ParsingRule,ParsingResponse,ParsingFactWrite,LookingForRule
         }
-        public void GenerateFromText(string text,List<RuleDBEntry> rules,ref int factID,ref Dictionary<string,int> addedFactIDNames)
+        public void GenerateFromText(string text,List<RuleDBEntry> rules,ref int factID,ref Dictionary<string,int> addedFactIDNames,ref int ruleID)
         {
 
             RuleScriptParserEnum state = RuleScriptParserEnum.LookingForRule;
@@ -79,13 +79,13 @@ namespace FactMatcher
                                     }
                                 }
                                 lastIndex--;
-                                Debug.Log($"derived is {derived} and foundDerived is {foundDerived} and lastIndex {lastIndex} and finalName is {finalName}");
+                                //Debug.Log($"derived is {derived} and foundDerived is {foundDerived} and lastIndex {lastIndex} and finalName is {finalName}");
                             }
 
                             currentRule = new RuleDBEntry();
                             currentRule.atoms = new List<RuleDBAtomEntry>(); 
                             currentRule.ruleName = finalName.ToString();
-                            Debug.Log($"Adding atoms from derived {derived}");
+                            //Debug.Log($"Adding atoms from derived {derived}");
                             //Grab atoms from derived
                             if (derived.Length > 0)
                             {
@@ -96,7 +96,7 @@ namespace FactMatcher
                                     foreach (var atom in parsedAtoms[derived.ToString()])
                                     {
                                 
-                                        Debug.Log($"for rule {currentRule.ruleName} - Adding atom {atom.factName} from derived {derived}");
+                                        //Debug.Log($"for rule {currentRule.ruleName} - Adding atom {atom.factName} from derived {derived}");
                                         currentRule.atoms.Add(atom); 
                                     }
                                 }
@@ -140,19 +140,21 @@ namespace FactMatcher
                             currentRule.payload = payload.ToString();
                             if (rules.Any(entry => entry.ruleName.Equals(currentRule.ruleName)))
                             {
-                               Debug.LogError($"Allreay Contains a rule named {currentRule.ruleName} - will not add"); 
+                               Debug.LogError($"Allready Contains a rule named {currentRule.ruleName} - will not add"); 
                             }
                             else
                             {
                                 //Assigns an unique (to the RuleDB) ID to each fact
                                 SetFactID(currentRule, ref addedFactIDNames,ref factID);
+                                currentRule.RuleID = ruleID;
+                                ruleID++;
                                 rules.Add(currentRule);
                             }
                         
                             //adding all our atoms into the parsedAtoms array for deriving to work..
                             foreach (var atomEntry in currentRule.atoms)
                             {
-                                Debug.Log($"Adding atom {atomEntry.factName} to ParsedAtoms with key {currentRule.ruleName}");
+                                //Debug.Log($"Adding atom {atomEntry.factName} to ParsedAtoms with key {currentRule.ruleName}");
                                 if (!parsedAtoms.ContainsKey(currentRule.ruleName))
                                 {
                                     parsedAtoms[currentRule.ruleName] = new List<RuleDBAtomEntry>();
@@ -224,11 +226,6 @@ namespace FactMatcher
                 if (line.Trim().Contains(operand.Item1))
                 {
                     var splits = line.Split(new[] {operand.Item1}, StringSplitOptions.RemoveEmptyEntries);
-                    foreach (var split in splits)
-                    {
-                        Debug.Log($"The split contains {split}");
-                    }
-
                     if (splits.Length != 2)
                     {
                         Debug.LogError("Error case - Operand split trouble");
@@ -298,11 +295,6 @@ namespace FactMatcher
                 if (line.Trim().Contains(operand.Item1))
                 {
                     var splits = line.Split(new[] {operand.Item1}, StringSplitOptions.RemoveEmptyEntries);
-                    foreach (var split in splits)
-                    {
-                        Debug.Log($"The split contains {split}");
-                    }
-
                     if (splits.Length != 2)
                     {
                         Debug.LogError("Error case - Operand split trouble");
@@ -331,9 +323,9 @@ namespace FactMatcher
                             bool exclusiveRight= valueMatch.Contains(")");
                             
                             var splitRange = valueMatch.Trim('(','[',')',']').Split(',');
-                            Debug.Log($"handling {valueMatch} in compareMethodRange");
-                            Debug.Log($"handling left val {splitRange[0]} in compareMethodRange");
-                            Debug.Log($"handling right val {splitRange[1]} in compareMethodRange");
+                            //Debug.Log($"handling {valueMatch} in compareMethodRange");
+                            //Debug.Log($"handling left val {splitRange[0]} in compareMethodRange");
+                            //Debug.Log($"handling right val {splitRange[1]} in compareMethodRange");
                             if (float.TryParse(splitRange[0], out float left))
                             {
                                 atomEntry.matchValue = left;

@@ -111,12 +111,12 @@ namespace FactMatcher
         int atomIndex = 0;
         
             
-        Debug.Log($"Creating native version of this many rules {db.rules.Count}");
+        //Debug.Log($"Creating native version of this many rules {db.rules.Count}");
         for (int i = 0; i < db.rules.Count; i++)
         {
 
-            Debug.Log($"Creating native version of rule {db.rules[i].ruleName} with {db.rules[i].atoms} atoms");
-            var ruleFiredEventID = FactMatcherCodeGenerator.RuleIDReflection(db.rules[i],db.GetNameSpaceName());
+            //Debug.Log($"Creating native version of rule {db.rules[i].ruleName} with {db.rules[i].atoms} atoms");
+            var ruleFiredEventID = db.rules[i].RuleID;
             rules[i] = new FactMatcher.FMRule(ruleFiredEventID, atomIndex, db.rules[i].atoms.Count);
             foreach (var atom in db.rules[i].atoms)
             {

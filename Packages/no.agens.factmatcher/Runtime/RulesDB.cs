@@ -78,6 +78,7 @@ public class RuleDBAtomEntry
 [Serializable]
 public class RuleDBEntry
 {
+    public int RuleID;
     public string ruleName;
     public string payload;
     public List<RuleDBFactWrite> factWrites;
@@ -132,10 +133,6 @@ ScriptableObject
         var finalPath = path + $"{fileNumber}.txt";
         File.WriteAllText(Application.dataPath + finalPath.Split(new []{"Assets"},StringSplitOptions.RemoveEmptyEntries)[0] , GetDefaultRuleScriptContent());
         AssetDatabase.Refresh();
-
-        string str = "";
-        //AssetDatabase.CreateAsset(new , finalPath); 
-        Debug.Log($"Pressed it! {path}");
 		
     }
 
@@ -156,6 +153,8 @@ ScriptableObject
         
         var rule2 = ".RuleName.Derived\n" +
                     "player.height > 180\n" +
+                    "--You can also use Range which expands into to checks when the rulescript is parsed ( for exclusive [ for inclusive ..\n" +
+                    "player.health Range(5,25]\n" +
                     ":Response:\n" +
                     "rule matches if base rule .RuleName matches and height is bigger than 180\n" +
                     ":End:\n\n\n";
@@ -173,11 +172,12 @@ ScriptableObject
         {
             rules.Clear();
             int factID = 0;
+            int ruleID = 0;
             Dictionary<string,int> addedFactIDS = new Dictionary<string, int>();
             foreach (var ruleScript in generateFrom)
             {
                 var parser = new RuleScriptParser();
-                parser.GenerateFromText(ruleScript.text,rules,ref factID,ref addedFactIDS); 
+                parser.GenerateFromText(ruleScript.text,rules,ref factID,ref addedFactIDS, ref ruleID); 
             }
             GenerateFactIDS();
         }
@@ -259,12 +259,9 @@ ScriptableObject
         {
             id = -1;
         }
-        Debug.Log($"For string {str} we give the id {id}");
         return id;
     }
     
-    //Todo - better way to access RuleFromID since we now just store everything in a dictionary ... ? 
-    //This is not exactly elegant
     public RuleDBEntry RuleFromID(int id)
     {
         if (RuleMap == null)
@@ -289,7 +286,7 @@ ScriptableObject
         {
             foreach (var rule in db.rules)
             {
-                var id = FactMatcherCodeGenerator.RuleIDReflection(rule,db.GetNameSpaceName());
+                var id = rule.RuleID;
                 dic[id] = rule;
 
             }

@@ -116,7 +116,6 @@ public class FactMatcherTest : MonoBehaviour
         ref FactMatcher.FMRule bestMatch)
     {
        
-        float factValue = 0;
         int ruleI = 0;
         int currentBestMatch = 0;
         int bestRuleIndex = -1;

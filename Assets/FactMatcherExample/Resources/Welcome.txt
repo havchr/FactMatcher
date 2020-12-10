@@ -68,8 +68,22 @@ player.age < 10
 weather.temperature > 20
 weather.rainMs < 8
 weather.thunderPerSecond < 8
+:FactWrite:
+commentator.youngAgeCommented = 1
 :Response:
 Lemon was just a young boy when he found himself lost in the worst and most absurd thunderstorm he'd ever seen.
 It was thundering wild, but at the same time, almost no rain and it was quite warm.
+:End:
+
+.WelcomeLemon.WarmThunderstormOld
+player.age > 70 
+weather.temperature > 20
+weather.rainMs < 8
+weather.thunderPerSecond < 8
+:FactWrite:
+commentator.oldAgeCommented = 1
+:Response:
+Lemon was an old man he found himself lost in the worst and most absurd thunderstorm he'd ever seen.
+It was thundering wild, but at the same time, almost no rain and it was quite warm. Never before in his long lived life had he seen such a thing.
 :End:
 

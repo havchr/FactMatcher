@@ -34,7 +34,6 @@ public class FactMatcherJobSystem : MonoBehaviour
 
     public RuleDBEntry PickBestRule()
     {
-        Debug.Log($"Natively! We now have {_rules.Length} rules and in total {_ruleAtoms.Length} atoms");
         var bestRule = new NativeArray<FactMatcher.FMRule>(1,Allocator.Persistent);
         var bestRuleMatches = new NativeArray<int>(1,Allocator.Persistent);
         
@@ -51,52 +50,63 @@ public class FactMatcherJobSystem : MonoBehaviour
         job.Schedule().Complete();
         sw.Stop();
 
-        RuleDBEntry rule = ruleDB.RuleFromID(bestRule[0].ruleFiredEventId);
-        if (rule != null)
-        {
-            Debug.Log($"The result of the best match is: {rule.payload} with {bestRuleMatches[0]} matches and it took {sw.ElapsedMilliseconds} ms");
-            
-            //Handle fact writes.
-            foreach (var factWrite in rule.factWrites)
-            {
-                switch (factWrite.writeMode)
-                {
-                    
-                    case RuleDBFactWrite.WriteMode.IncrementValue:
-                        Debug.Log($"increment value {factWrite.writeValue} to fact {factWrite.factName} with factID {factWrite.factID} , was {_factValues[factWrite.factID]}");
-                        _factValues[factWrite.factID] += factWrite.writeValue;
-                        Debug.Log($"increment value {factWrite.writeValue} to fact {factWrite.factName} with factID {factWrite.factID} , was {_factValues[factWrite.factID]}");
-                        break;
-                    case RuleDBFactWrite.WriteMode.SubtractValue:
-                        Debug.Log($"subtracting value {factWrite.writeValue} from fact {factWrite.factName} with factID {factWrite.factID} , was {_factValues[factWrite.factID]}");
-                        _factValues[factWrite.factID] -= factWrite.writeValue;
-                        Debug.Log($"subtracting value {factWrite.writeValue} from fact {factWrite.factName} with factID {factWrite.factID} , became {_factValues[factWrite.factID]}");
-                        break;
-                    case RuleDBFactWrite.WriteMode.SetValue:
-                        Debug.Log($"Writing value {factWrite.writeValue} into fact {factWrite.factName} with factID {factWrite.factID}");
-                        _factValues[factWrite.factID] = factWrite.writeValue;
-                        break;
-                    case RuleDBFactWrite.WriteMode.SetString:
-                        Debug.Log($"Writing String {factWrite.writeString} into fact {factWrite.factName} with factID {factWrite.factID}");
-                        _factValues[factWrite.factID] = ruleDB.StringId(factWrite.writeString);
-                        break;
-                } 
-            }
-        }
-        Debug.Log($"The result of the best match is: {bestRule[0].ruleFiredEventId} with {bestRuleMatches[0]} matches and it took {sw.ElapsedMilliseconds} ms");
 
+        if (bestRule[0].ruleFiredEventId == -1)
+        {
+            return null;
+        }
+        RuleDBEntry rule = ruleDB.RuleFromID(bestRule[0].ruleFiredEventId);
+        Debug.Log($"The result of the best match is: {rule.payload} with {bestRuleMatches[0]} matches and it took {sw.ElapsedMilliseconds} ms");
+        HandleFactWrites(rule);
         bestRule.Dispose();
         bestRuleMatches.Dispose();
         return rule;
     }
+
     
+    private void HandleFactWrites(RuleDBEntry rule)
+    {
+        //Handle fact writes.
+        foreach (var factWrite in rule.factWrites)
+        {
+            switch (factWrite.writeMode)
+            {
+                case RuleDBFactWrite.WriteMode.IncrementValue:
+                    LogWritebacks(
+                        $"increment value {factWrite.writeValue} to fact {factWrite.factName} with factID {factWrite.factID} , was {_factValues[factWrite.factID]}");
+                    _factValues[factWrite.factID] += factWrite.writeValue;
+                    LogWritebacks(
+                        $"increment value {factWrite.writeValue} to fact {factWrite.factName} with factID {factWrite.factID} , was {_factValues[factWrite.factID]}");
+                    break;
+                case RuleDBFactWrite.WriteMode.SubtractValue:
+                    LogWritebacks(
+                        $"subtracting value {factWrite.writeValue} from fact {factWrite.factName} with factID {factWrite.factID} , was {_factValues[factWrite.factID]}");
+                    _factValues[factWrite.factID] -= factWrite.writeValue;
+                    LogWritebacks(
+                        $"subtracting value {factWrite.writeValue} from fact {factWrite.factName} with factID {factWrite.factID} , became {_factValues[factWrite.factID]}");
+                    break;
+                case RuleDBFactWrite.WriteMode.SetValue:
+                    LogWritebacks(
+                        $"Writing value {factWrite.writeValue} into fact {factWrite.factName} with factID {factWrite.factID}");
+                    _factValues[factWrite.factID] = factWrite.writeValue;
+                    break;
+                case RuleDBFactWrite.WriteMode.SetString:
+                    LogWritebacks(
+                        $"Writing String {factWrite.writeString} into fact {factWrite.factName} with factID {factWrite.factID}");
+                    _factValues[factWrite.factID] = ruleDB.StringId(factWrite.writeString);
+                    break;
+            }
+        }
+    }
+
     private void OnDestroy()
     {
         _factValues.Dispose();
         _rules.Dispose();
+        _ruleAtoms.Dispose();
     }
 
-    #if FACTMATCHER_BURST
+#if FACTMATCHER_BURST
     [BurstCompile(CompileSynchronously = true)]
 #endif
     private struct FactMatcherMatch : IJob
@@ -115,7 +125,6 @@ public class FactMatcherJobSystem : MonoBehaviour
         public void Execute()
         {
 
-            float factValue = 0;
             int ruleI = 0;
             int currentBestMatch = 0;
             int bestRuleIndex = -1;
@@ -129,11 +138,11 @@ public class FactMatcherJobSystem : MonoBehaviour
                 {
 
 
-                    //Debug.Log($"for rule {ruleI} with ruleFireID {rule.ruleFiredEventId} we are checking atoms from {rule.atomIndex} to {rule.atomIndex + rule.numOfAtoms} ");
+                    LogMatchJob($"for rule {ruleI} with ruleFireID {rule.ruleFiredEventId} we are checking atoms from {rule.atomIndex} to {rule.atomIndex + rule.numOfAtoms} ");
                     for (int j = rule.atomIndex; j < (rule.atomIndex + rule.numOfAtoms); j++)
                     {
                         var atom = RuleAtoms[j];
-                        //Debug.Log($"for rule {ruleI} with ruleFireID {rule.ruleFiredEventId} , comparing factID {atom.factID} with value {FactValues[atom.factID]} with atom.compare.lowerBound {atom.compare.lowerBound} and upperBound {atom.compare.upperBound} ");
+                        LogMatchJob($"for rule {ruleI} with ruleFireID {rule.ruleFiredEventId} , comparing factID {atom.factID} with value {FactValues[atom.factID]} with atom.compare.lowerBound {atom.compare.lowerBound} and upperBound {atom.compare.upperBound} ");
                         if (FactMatcher.Functions.predicate(in atom.compare, FactValues[atom.factID]))
                         {
                             howManyAtomsMatch++;
@@ -169,4 +178,17 @@ public class FactMatcherJobSystem : MonoBehaviour
     }
 
     static FactMatcher.FMRule emptyRule = new FactMatcher.FMRule(-1,0,0);
+    
+    
+    [Conditional("FACTMATCHER_LOG_MATCH_JOB")]
+    static void LogMatchJob(object msg)
+    {
+        Debug.Log(msg);
+    }
+    
+    [Conditional("FACTMATCHER_LOG_WRITEBACKS")]
+    static void LogWritebacks(object msg)
+    {
+        Debug.Log(msg);
+    }
 }

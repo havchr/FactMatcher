@@ -73,6 +73,12 @@
         "com.unity.modules.imgui": "1.0.0"
       }
     },
+    "no.agens.factmatcher": {
+      "version": "file:no.agens.factmatcher",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
     "com.unity.modules.ai": {
       "version": "1.0.0",
       "depth": 0,
