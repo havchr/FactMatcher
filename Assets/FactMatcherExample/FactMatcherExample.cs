@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -20,6 +21,11 @@ public class FactMatcherExample : MonoBehaviour
     public float windMs;
     public float rainMs;
     public float thunderPerSecond;
+
+    private void Start()
+    {
+        factMatcher.Init();
+    }
 
     public void OnConceptChange(Dropdown dropdown)
     {

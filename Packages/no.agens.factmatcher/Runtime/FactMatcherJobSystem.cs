@@ -13,12 +13,16 @@ public class FactMatcherJobSystem : MonoBehaviour
     private NativeArray<float> _factValues;
     private NativeArray<FMRule> _rules;
     private NativeArray<RuleAtom> _ruleAtoms;
+    private NativeArray<FactMatcher.FMRule> _bestRule;
+    private NativeArray<int> _bestRuleMatches;
     
-    private void Start()
+    public void Init()
     {
         ruleDB.InitRuleDB();
-        _factValues = new NativeArray<float>(FactMatcherCodeGenerator.CountNumberOfFacts(this.ruleDB),Allocator.Persistent);
+        _factValues = new NativeArray<float>(ruleDB.CountNumberOfFacts(),Allocator.Persistent);
         FactMatcher.Functions.CreateNativeRules(this.ruleDB, out _rules, out _ruleAtoms);
+        _bestRule = new NativeArray<FMRule>(1,Allocator.Persistent);
+        _bestRuleMatches = new NativeArray<int>(1,Allocator.Persistent);
     }
 
     public float this[int i]
@@ -34,16 +38,14 @@ public class FactMatcherJobSystem : MonoBehaviour
 
     public RuleDBEntry PickBestRule()
     {
-        var bestRule = new NativeArray<FactMatcher.FMRule>(1,Allocator.Persistent);
-        var bestRuleMatches = new NativeArray<int>(1,Allocator.Persistent);
         
         var job = new FactMatcherMatch() 
         {
             FactValues = _factValues,
             RuleAtoms = _ruleAtoms,
             Rules = _rules,
-            BestRule = bestRule,
-            BestRuleMatches = bestRuleMatches
+            BestRule = _bestRule,
+            BestRuleMatches = _bestRuleMatches
         };
         var sw = new Stopwatch();
         sw.Start();
@@ -51,15 +53,13 @@ public class FactMatcherJobSystem : MonoBehaviour
         sw.Stop();
 
 
-        if (bestRule[0].ruleFiredEventId == -1)
+        if (_bestRule[0].ruleFiredEventId == -1)
         {
             return null;
         }
-        RuleDBEntry rule = ruleDB.RuleFromID(bestRule[0].ruleFiredEventId);
-        Debug.Log($"The result of the best match is: {rule.payload} with {bestRuleMatches[0]} matches and it took {sw.ElapsedMilliseconds} ms");
+        RuleDBEntry rule = ruleDB.RuleFromID(_bestRule[0].ruleFiredEventId);
+        Debug.Log($"The result of the best match is: {rule.payload} with {_bestRuleMatches[0]} matches and it took {sw.ElapsedMilliseconds} ms");
         HandleFactWrites(rule);
-        bestRule.Dispose();
-        bestRuleMatches.Dispose();
         return rule;
     }
 
@@ -104,6 +104,8 @@ public class FactMatcherJobSystem : MonoBehaviour
         _factValues.Dispose();
         _rules.Dispose();
         _ruleAtoms.Dispose();
+        _bestRule.Dispose();
+        _bestRuleMatches.Dispose();
     }
 
 #if FACTMATCHER_BURST

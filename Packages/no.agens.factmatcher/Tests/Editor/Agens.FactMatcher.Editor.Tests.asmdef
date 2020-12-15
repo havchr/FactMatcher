@@ -1,9 +1,10 @@
 {
-    "name": "NewAssembly",
+    "name": "Agens.FactMatcher.Editor.Tests",
+    "rootNamespace": "",
     "references": [
         "UnityEditor.TestRunner",
         "UnityEngine.TestRunner",
-        "FactMatcher"
+        "Agens.FactMatcher"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
